@@ -2,10 +2,11 @@
 //!
 //! Requires the `stm32-usbd` feature
 
-use crate::{gpio::{Analog, Output}, stm32::{RCC, USB_FS_DEVICE}};
+// use crate::{gpio::{Analog, Output}};
+use crate::{stm32::{RCC, USB_FS_DEVICE}};
 use stm32_usbd::UsbPeripheral;
 
-use crate::gpio::gpioa::{PA11, PA12};
+// use crate::gpio::gpioa::{PA11, PA12};
 pub use stm32_usbd::UsbBus;
 
 /// USB Peripheral

@@ -94,7 +94,7 @@ macro_rules! gpio {
                 type Parts = Parts;
 
                 fn split(self, rcc: &mut Rcc) -> Parts {
-                    rcc.rb.ahb2enr.modify(|_, w| w.$iopxenr().set_bit());
+                    rcc.ahb2.enr().modify(|_, w| w.$iopxenr().set_bit());
                     Parts {
                         $(
                             $pxi: $PXi { _mode: PhantomData },
