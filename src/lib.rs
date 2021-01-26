@@ -48,6 +48,7 @@ pub use crate::stm32::interrupt;
 
 // pub mod adc;
 // pub mod crc;
+pub mod clock_setup;
 // pub mod dac;
 pub mod delay;
 // pub mod dma;
