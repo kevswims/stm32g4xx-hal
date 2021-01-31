@@ -5,6 +5,7 @@ use crate::stm32::{
 
 use crate::flash::ACR;
 use crate::time::Hertz;
+use crate::time::U32Ext;
 
 pub trait RccExt {
     fn constrain(self) -> Rcc;
@@ -79,10 +80,83 @@ impl AHB3 {
 #[derive(Default)]
 pub struct CFGR {
     hse: Option<u32>,
+    hse_bypass: bool,
+    css: bool,
+    hclk: Option<u32>,
+    pclk1: Option<u32>,
+    pclk2: Option<u32>,
+    sysclk: Option<u32>,
 }
 
 impl CFGR {
-    pub fn freeze(self) -> () {
+    /// Uses `HSE` (high speed external oscillator) instead of `HSI` (high speed internal oscillator) as the clock source
+    ///
+    /// Will result in a hang if an external oscillator is not connected or it fails to start,
+    /// unless enable_css is enabled
+    pub fn use_hse<F>(mut self, freq: F) -> Self
+    where
+        F: Into<Hertz>,
+    {
+        self.hse = Some(freq.into().0);
+        self
+    }
+
+    pub fn bypass_hse(mut self) -> Self {
+        self.hse_bypass = true;
+        self
+    }
+
+    pub fn enable_css(mut self) -> Self {
+        self.css = true;
+        self
+    }
+
+    /// Sets a frequency for the HCLK AHB bus
+    ///
+    /// Maximum of 170 MHz
+    pub fn hclk<F>(mut self, freq: F) -> Self
+    where
+        F: Into<Hertz>,
+    {
+        self.hclk = Some(freq.into().0);
+        self
+    }
+
+    /// Sets a frequency for the APB1 bus
+    ///
+    /// Maximum of 170 MHz
+    pub fn pclk1<F>(mut self, freq: F) -> Self
+    where
+        F: Into<Hertz>,
+    {
+        self.pclk1 = Some(freq.into().0);
+        self
+    }
+
+    /// Sets a frequency for the APB2 bus
+    ///
+    /// Maximum of 170 MHz
+    pub fn pclk2<F>(mut self, freq: F) -> Self
+    where
+        F: Into<Hertz>,
+    {
+        self.pclk2 = Some(freq.into().0);
+        self
+    }
+
+    /// Sets a frequency for the system core
+    ///
+    /// Maximum of 170 MHz
+    pub fn sysclk<F>(mut self, freq: F) -> Self
+    where
+        F: Into<Hertz>,
+    {
+        self.sysclk = Some(freq.into().0);
+        self
+    }
+
+
+    pub fn freeze(self) -> Clocks {
         let rcc = unsafe { &*RCC::ptr() };
 
         // Turn on the external oscillator. The HSE is 8 MHz
@@ -178,6 +252,18 @@ impl CFGR {
             // Turn on USB clock
             rcc.apb1enr1.modify(|_, w| w.usben().set_bit());
         }
+
+        Clocks {
+            sysclk: 144.mhz(),
+            hclk: 144.mhz(),
+            pclk1: 72.mhz(),
+            pclk2: 72.mhz(),
+            pll_clk: PLLClocks {
+                r: 144.mhz(),
+                q: Some(48.mhz()),
+                p: Some(24.mhz()),
+            }
+        }
     }
 }
 
@@ -187,16 +273,14 @@ pub const HSI_FREQ: u32 = 16_000_000;
 /// Clock frequencies
 #[derive(Clone, Copy)]
 pub struct Clocks {
-    /// System frequency
-    pub sys_clk: Hertz,
-    /// Core frequency
-    pub core_clk: Hertz,
-    /// AHB frequency
-    pub ahb_clk: Hertz,
-    /// APB frequency
-    pub apb_clk: Hertz,
-    /// APB timers frequency
-    pub apb_tim_clk: Hertz,
+    /// System frequency - SYSCLK
+    pub sysclk: Hertz,
+    /// Core frequency - HCLK
+    pub hclk: Hertz,
+    /// APB1 frequency - PCLK1
+    pub pclk1: Hertz,
+    /// APB1 frequency - PCLK2
+    pub pclk2: Hertz,
     /// PLL frequency
     pub pll_clk: PLLClocks,
 }
