@@ -214,8 +214,8 @@ impl CFGR {
         // source, wait 1 us, then set the AHB prescaler back.
         unsafe {
             rcc.cfgr.modify(|_, w| {
-                w.ppre2().bits(0b101); // Divide the APB domains by 4
-                w.ppre1().bits(0b101);
+                w.ppre2().bits(0b101); // Divide the APB2 domains by 4
+                w.ppre1().bits(0b100); // Divide the APB1 domains by 2
                 w.hpre().bits(0b1000);
                 w.sw().bits(0b11) // PLL as system clock
             });
@@ -230,7 +230,7 @@ impl CFGR {
             rcc.cfgr.modify(|_, w| w.mcopre().bits(0b100));
 
             // Set MCO source to PLL
-            rcc.cfgr.modify(|_, w| w.mcosel().bits(0b0101));
+            rcc.cfgr.modify(|_, w| w.mcosel().bits(0b0001));
         }
 
         // Turn on apb clock to CAN FD module
@@ -243,6 +243,8 @@ impl CFGR {
 
         // Turn on clocks to GPIO A
         rcc.ahb2enr.modify(|_, w| w.gpioaen().set_bit());
+        rcc.ahb2enr.modify(|_, w| w.gpioben().set_bit());
+        rcc.ahb2enr.modify(|_, w| w.gpiocen().set_bit());
 
         // Configure clocks for USB
         unsafe {
