@@ -59,7 +59,7 @@ pub enum SignalEdge {
 }
 
 #[allow(dead_code)]
-pub(crate) enum AltFunction {
+pub enum AltFunction {
     AF0 = 0,
     AF1 = 1,
     AF2 = 2,
@@ -68,6 +68,14 @@ pub(crate) enum AltFunction {
     AF5 = 5,
     AF6 = 6,
     AF7 = 7,
+    AF8 = 8,
+    AF9 = 9,
+    AF10 = 10,
+    AF11 = 11,
+    AF12 = 12,
+    AF13 = 13,
+    AF14 = 14,
+    AF15 = 15,
 }
 
 macro_rules! gpio {
@@ -330,7 +338,7 @@ macro_rules! gpio {
                     }
 
                     #[allow(dead_code)]
-                    pub(crate) fn set_alt_mode(&self, mode: AltFunction) {
+                    pub fn set_alt_mode(&self, mode: AltFunction) {
                         let mode = mode as u32;
                         let offset = 2 * $i;
                         let offset2 = 4 * $i;
